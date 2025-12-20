@@ -1,0 +1,129 @@
+module ddr_controller(
+	input logic clk,
+	input logic rst,
+	input logic req_valid,
+	input logic [15:0] addr,
+	input logic [3:0] bank_ready,
+	output logic [3:0] act,
+	output logic [3:0] rd,
+	output logic [3:0] pre,
+	output logic busy,
+
+	output integer row_hit_cnt,
+	output integer row_miss_cnt,
+	output integer row_conflict_cnt
+);
+
+typedef enum logic [2:0] {IDLE, DO_ACT, DO_RD, DO_PRE, WAIT} ctrl_state_t;
+
+ctrl_state_t state, next_state;
+
+typedef enum logic [1:0] { 
+	HIT,
+	MISS,
+	CONFLICT
+} access_t;
+
+access_t access_type;
+
+logic [1:0] bank;
+logic [7:0] row;
+logic [5:0] col;
+
+assign bank = addr[7:6];
+assign row = addr[15:8];
+assign col = addr[5:0];
+
+logic bank_open [0:3];
+logic [7:0] open_row [0:3];
+
+integer i;
+
+always_ff @(posedge clk or negedge rst) begin
+	if(!rst) begin
+		state <= IDLE;
+		for(i = 0;i<4;i++) begin 
+			bank_open[i] <= 1'b0;
+			open_row[i] <= '0;
+		end
+		row_hit_cnt <= 0;
+		row_miss_cnt <= 0;
+		row_conflict_cnt <= 0;
+	end else begin
+		state <= next_state;
+		if(state == IDLE && req_valid) begin 
+			case (access_type) 
+				HIT: row_hit_cnt <= row_hit_cnt +1;
+				MISS: row_miss_cnt <= row_miss_cnt+1;
+				CONFLICT: row_conflict_cnt <= row_conflict_cnt+1;
+			endcase
+		end
+		if(act[bank]) begin
+			bank_open[bank] <= 1'b1;
+			open_row[bank] <= row;
+		end 
+		if(pre[bank]) begin 
+			bank_open(bank) <= 1'b0;
+		end
+	end
+end
+
+always_comb begin
+	act = '0;
+	rd = '0;
+	pre = '0;
+	next_state = state;
+	access_type = HIT;
+	
+	if(req_valid) begin
+		if(!bank_open[bank]) begin
+			access_type = MISS;
+		end else if(open_row[bank] != row) begin
+			access_type = CONFLICT; 
+		end
+	end
+	case (state) 
+		IDLE: begin if(req_valid) begin
+				case(access_type) 
+					HIT: next_state = DO_RD;
+					MISS: next_state = DO_ACT;
+					CONFLICT: next_state = DO_PRE;
+				endcase	
+			    end
+		      end
+		DO_PRE: begin 
+				pre[bank] = 1'b1;
+				next_state = DO_ACT;
+			end
+		DO_ACT: begin
+			act[bank] = 1'b1;
+			next_state = DO_RD;
+			end
+		DO_RD: begin
+			rd[bank] = 1'b1;
+			next_state = WAIT;
+			end
+		WAIT: begin
+				if(bank_ready[bank]) begin
+					next_state = IDLE; 
+				end
+			end
+		default: next_state = IDLE;
+	endcase
+end
+
+always_ff @(posedge clk or negedge rst) begin 
+	if(!rst) begin 
+		
+	end else begin 
+	 if(act[bank]) begin	
+		bank_open[bank] <= 1'b1;
+		open_row[bank] <= row;
+	 end
+	if(pre[bank]) begin 
+		bank_open[bank] <= 1'b0;
+	end
+	end
+end
+
+endmodule

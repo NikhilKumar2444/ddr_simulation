@@ -1,0 +1,29 @@
+E:/projects/DDR_SIM/rtl/ddr_top.sv {1 {vlog -stats=none -work work -sv E:/projects/DDR_SIM/rtl/ddr_top.sv
+Model Technology ModelSim PE Student Edition vlog 10.3a Compiler 2014.04 Apr 14 2014
+-- Compiling module ddr_top
+
+Top level modules:
+	ddr_top
+
+} {} {}} E:/projects/DDR_SIM/rtl/ddr_controller.sv {1 {vlog -stats=none -work work -sv E:/projects/DDR_SIM/rtl/ddr_controller.sv
+Model Technology ModelSim PE Student Edition vlog 10.3a Compiler 2014.04 Apr 14 2014
+-- Compiling module ddr_controller
+
+Top level modules:
+	ddr_controller
+
+} {} {}} E:/projects/DDR_SIM/rtl/ddr_bank.sv {1 {vlog -stats=none -work work -sv E:/projects/DDR_SIM/rtl/ddr_bank.sv
+Model Technology ModelSim PE Student Edition vlog 10.3a Compiler 2014.04 Apr 14 2014
+-- Compiling module ddr_bank
+
+Top level modules:
+	ddr_bank
+
+} {} {}} E:/projects/DDR_SIM/tb/tb_ddr.sv {1 {vlog -stats=none -work work -sv E:/projects/DDR_SIM/tb/tb_ddr.sv
+Model Technology ModelSim PE Student Edition vlog 10.3a Compiler 2014.04 Apr 14 2014
+-- Compiling module tb_ddr
+
+Top level modules:
+	tb_ddr
+
+} {} {}}
